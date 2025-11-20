@@ -1,20 +1,20 @@
 import numpy as np
 import h5py
 import matplotlib.pyplot as plt
-import os  # <-- Import os for file checking
+import os  
 
-# --- 1. DEFINE PHYSICAL CONSTANTS (in CGS) ---
+# --- PHYSICAL CONSTANTS  ---
 M_sol = 1.989e33  # g
 c = 2.9979e10     # cm/s
 day = 86400.0       # s
 
-# --- 2. DEFINE KILONOVA MODEL PARAMETERS ---
+# --- KILONOVA MODEL PARAMETERS ---
 M_ej = 0.03 * M_sol   # Total ejecta mass
-v_k = 0.1 * c         # Characteristic "break" velocity (v_t in screenshot)
-n_inner = 1.0         # Inner density power-law index (delta in screenshot)
-n_outer = 10.0        # Outer density power-law index (n in screenshot)
+v_k = 0.1 * c         # Characteristic "break" velocity 
+n_inner = 1.0         # Inner density power-law index 
+n_outer = 10.0        # Outer density power-law index 
 
-# --- 3. DEFINE THE COMPUTATIONAL GRID ---
+# --- DEFINE THE COMPUTATIONAL GRID ---
 # We define the model at a reference time, t_exp.
 t_exp = 1.0 * day
 n_zones = 200         # Number of radial zones
@@ -41,7 +41,7 @@ r_centers = 0.5 * (r_inner_bnds + r_outer_bnds)
 zone_volumes = (4.0/3.0) * np.pi * (r_outer_bnds**3 - r_inner_bnds**3)
 v_centers = r_centers / t_exp # Velocity at cell centers
 
-# --- 4. CALCULATE THE DENSITY PROFILE ---
+# --- DENSITY PROFILE CALCULATIONS---
 rho_unnormalized = np.zeros(n_zones)
 r_k = v_k * t_exp
 
@@ -53,11 +53,10 @@ rho_unnormalized[inner_mask] = (r_centers[inner_mask] / r_k)**(-n_inner)
 outer_mask = (r_centers > r_k)
 rho_unnormalized[outer_mask] = (r_centers[outer_mask] / r_k)**(-n_outer)
 
-# --- 5. NORMALIZE THE DENSITY ---
+# --- DENSITY NORMALIZATION ---
 mass_unnormalized = np.sum(rho_unnormalized * zone_volumes)
 normalization_factor = M_ej / mass_unnormalized
 
-# --- Add print statements here ---
 print("--- Normalization Details ---")
 print(f"Target Mass (M_ej):      {M_ej:e} g ({M_ej/M_sol:.3f} M_sol)")
 print(f"Unnormalized Mass:       {mass_unnormalized:e} g")
@@ -66,7 +65,7 @@ print("-----------------------------")
 
 rho_final = rho_unnormalized * normalization_factor
 
-# --- 6. DEFINE COMPOSITION ---
+# --- ELEMENTAL COMPOSITION ---
 elements = [
     'h', 'he', 'li', 'be', 'b', 'c', 'n', 'o', 'f', 'ne', 'na', 'mg', 'al',
     'si', 'p', 's', 'cl', 'ar', 'k', 'ca', 'sc', 'ti', 'v', 'cr', 'mn',
@@ -91,11 +90,11 @@ abundances['fe_mass_frac'] = np.full(n_zones, 1.0 - rproc_mass_fraction)
 # in each zone, so this is equivalent to 100% Germanium.
 
 """
-# --- 6b. DEFINE R-PROCESS HEATING PARAMETERS ---
+# --- R-PROCESS HEATING PARAMETERS ---
 rproc_X = np.full(n_zones, 0.001)
 rproc_Ye = np.full(n_zones, 0.2)
 
-# --- 7. WRITE THE HDF5 MODEL FILE ---
+# --- WRITE THE HDF5 MODEL FILE ---
 # --- Define base filenames ---
 base_h5_name = 'kn_physical_powerlaw'
 base_plot_name = 'kn_physical_profile'
@@ -135,7 +134,7 @@ with h5py.File(output_filename_h5, 'w') as f:
 
 print("HDF5 model file created successfully.")
 
-# --- 8. PLOT THE DENSITY PROFILE ---
+# --- PLOT THE DENSITY PROFILE ---
 print("Generating density plot...")
 plt.figure(figsize=(10, 7))
 
